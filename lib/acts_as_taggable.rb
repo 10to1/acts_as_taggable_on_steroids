@@ -71,7 +71,7 @@ module ActiveRecord #:nodoc:
                 (SELECT COUNT(*) FROM #{Tagging.table_name}
                  INNER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id
                  WHERE #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)} AND
-                 taggable_id = #{table_name}.id AND
+                 taggable_id = #{quoted_table_name}.id AND
                  #{tags_condition(tags)}) = #{tags.size}
               END
             else
@@ -80,7 +80,7 @@ module ActiveRecord #:nodoc:
           end
           
           { :select => "DISTINCT #{table_name}.*",
-            :joins => "INNER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
+            :joins => "INNER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{quoted_table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
                       "INNER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
             :conditions => conditions.join(" AND ")
           }.reverse_merge!(options)
@@ -127,7 +127,7 @@ module ActiveRecord #:nodoc:
           conditions = conditions.join(' AND ')
           
           joins = ["INNER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
-          joins << "INNER JOIN #{table_name} ON #{table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
+          joins << "INNER JOIN #{quoted_table_name} ON #{quoted_table_name}.#{primary_key} = #{Tagging.table_name}.taggable_id"
           joins << scope[:joins] if scope && scope[:joins]
           
           at_least  = sanitize_sql(['COUNT(*) >= ?', options.delete(:at_least)]) if options[:at_least]
