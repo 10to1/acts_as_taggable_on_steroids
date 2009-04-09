@@ -60,7 +60,7 @@ module ActiveRecord #:nodoc:
           
           if options.delete(:exclude)
             conditions << <<-END
-              #{table_name}.id NOT IN
+              #{quoted_table_name}.id NOT IN
                 (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name}
                  INNER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id
                  WHERE #{tags_condition(tags)} AND #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)})
@@ -79,7 +79,7 @@ module ActiveRecord #:nodoc:
             end
           end
           
-          { :select => "DISTINCT #{table_name}.*",
+          { :select => "DISTINCT #{quoted_table_name}.*",
             :joins => "INNER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{quoted_table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
                       "INNER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
             :conditions => conditions.join(" AND ")
